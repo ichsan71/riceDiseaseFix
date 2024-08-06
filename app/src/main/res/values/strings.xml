@@ -1,0 +1,18 @@
+<resources>
+    <string name="app_name">Disease Detection</string>
+    <string name="spot_color">Warna Bercak :</string>
+    <string name="leaf_color">Warna Daun :</string>
+    <string name="spot_shape">Bentuk Bercak :</string>
+    <string name="disease">Penyakit :</string>
+    <string name="prediction_result">Hasil Prediksi</string>
+    <string name="todo">Penanganan</string>
+    <string name="upload">Unggah Gambar</string>
+    <string name="gallery">Galeri</string>
+    <string name="disease_error">Error</string>
+    <string name="camera">Kamera</string>
+    <string name="lorem">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse id elit eleifend, commodo sapien eu, consequat sapien. Nam sit amet tortor ut lorem dapibus egestas. Nam tristique nisl id ipsum bibendum, eu maximus mauris vulputate.
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse id elit eleifend, commodo sapien eu, consequat sapien. Nam sit amet tortor ut lorem dapibus egestas. Nam tristique nisl id ipsum bibendum, eu maximus mauris vulputate.Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse id elit eleifend, commodo sapien eu, consequat sapien. Nam sit amet tortor ut lorem dapibus egestas. Nam tristique nisl id ipsum bibendum, eu maximus mauris vulputate.Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse id elit eleifend, commodo sapien eu, consequat sapien. Nam sit amet tortor ut lorem dapibus egestas. Nam tristique nisl id ipsum bibendum, eu maximus mauris vulputate.
+    </string>
+
+
+</resources>
