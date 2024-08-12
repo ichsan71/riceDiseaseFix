@@ -1,6 +1,6 @@
 package com.marqumil.tensorflowlitetest
 
-import android.annotation.SuppressLint
+
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.ImageDecoder
@@ -19,7 +19,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -29,12 +28,18 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -45,13 +50,18 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -64,6 +74,7 @@ import java.util.Date
 import java.util.Locale
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.marqumil.tensorflowlitetest.data.handlings
+import com.marqumil.tensorflowlitetest.model.DiseasePredictionResponse
 import com.marqumil.tensorflowlitetest.model.DiseaseRequestBody
 import com.marqumil.tensorflowlitetest.viewmodel.DiseaseViewModel
 import com.marqumil.tensorflowlitetest.viewmodel.ImagePickerViewModel
@@ -166,6 +177,8 @@ fun ImagePicker(viewModel: ImagePickerViewModel = viewModel()) {
                     spotShape = spotModelCode
                 )
                 diseaseViewModel.getDiseasePrediction(requestBody)
+            } else {
+                diseaseViewModel.setDiseaseUiState(DiseaseUiState.Error)
             }
         }
     }
@@ -286,12 +299,15 @@ fun PredictionResults(
     riceSpotModelResult: String?,
     diseaseUiState: DiseaseUiState
 ) {
+
+    var showDialog by remember { mutableStateOf(false) }
+
     Column(
         modifier = Modifier.fillMaxWidth()
     ) {
 
         if (bitmap == null) {
-            Log.d("test", "nothing")
+            Log.e("RiceResultErrorBitmap", "nothing")
         } else {
             Box(
                 modifier = Modifier.fillMaxWidth(),
@@ -342,12 +358,14 @@ fun PredictionResults(
                 }
                 Spacer(modifier = Modifier.padding(8.dp))
             }
+
             when (diseaseUiState) {
                 is DiseaseUiState.Loading -> {
+                    Log.e("RiceDiseaseUiState", "Loading")
                     Text(text = "Loading...")
                 }
                 is DiseaseUiState.Success -> {
-
+                    Log.e("RiceDiseaseUiState", "Success")
                     val disease = when (diseaseUiState.predictionResponse.prediction) {
                         "0" -> "Blast"
                         "1" -> "Hawar Daun Bakteri"
@@ -378,42 +396,103 @@ fun PredictionResults(
 
                     Spacer(modifier = Modifier.padding(8.dp))
 
-                    for(handling in handlings){
-                        if(handling.name == disease){
-                            Box(
-                                modifier = Modifier.fillMaxWidth(),
-                                contentAlignment = Alignment.CenterStart
-                            ) {
-                                Text(handling.description,
-                                    textAlign = TextAlign.Justify)
+                    // Displaying handlings as bullet points
+                    Column(
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        handlings.filter { it.name == disease }.forEach { handling ->
+                            handling.description.forEach { item ->
+                                BulletItem(text = item)
                             }
-
                             Spacer(modifier = Modifier.padding(8.dp))
                         }
                     }
 
                 }
                 is DiseaseUiState.Error -> {
-                    Box(
-                        modifier = Modifier.fillMaxWidth(),
-                        contentAlignment = Alignment.CenterStart
-                    ) {
-                        Text(
-                            stringResource(id = R.string.disease_error),
-                            fontSize = 16.sp
-                        )
+                    Log.e("RiceDiseaseUiState", "Error")
+                    LaunchedEffect(Unit) {
+                        showDialog = true
                     }
-                    Spacer(modifier = Modifier.padding(8.dp))
                 }
             }
 
             Spacer(modifier = Modifier.padding(20.dp))
         }
 
-
+        if (showDialog) {
+            AlertDialogExample(
+                onConfirmation = { showDialog = false },
+                onDismissRequest = { showDialog = false },
+                icon = Icons.Default.Warning,
+                dialogText = "Padi tidak terdeteksi, harap ambil ulang foto",
+                dialogTitle = "Error"
+            )
+        }
     }
 }
 
+
+
+@Composable
+fun BulletItem(text: String) {
+    Row(
+        verticalAlignment = Alignment.Top,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Text(
+            text = "•",
+            style = TextStyle(fontSize = 16.sp, color = Color.Black),
+            modifier = Modifier.padding(end = 8.dp) // Spasi antara bullet dan teks
+        )
+        // Wrap the text to handle multi-line texts properly
+        Text(
+            text = text,
+            style = TextStyle(fontSize = 16.sp, color = Color.Black),
+            modifier = Modifier
+                .padding(start = 4.dp) // Padding untuk teks
+                .weight(1f) // Take up remaining space to align text properly
+        )
+    }
+}
+
+
+@Composable
+fun AlertDialogExample(
+    onConfirmation: () -> Unit,
+    onDismissRequest: () -> Unit,
+    icon: ImageVector,
+    dialogText: String,
+    dialogTitle: String
+) {
+    AlertDialog(
+        onDismissRequest = onDismissRequest,
+        title = {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(imageVector = icon, contentDescription = null)
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(text = dialogTitle)
+            }
+        },
+        text = {
+            Text(dialogText)
+        },
+        confirmButton = {
+            Button(
+                onClick = onConfirmation
+            ) {
+                Text("Confirm")
+            }
+        },
+        dismissButton = {
+            TextButton(
+                onClick = onDismissRequest
+            ) {
+                Text("Dismiss")
+            }
+        }
+    )
+}
 
 
 private fun createImageFile(context: Context): Uri? {
@@ -446,13 +525,32 @@ private fun loadBitmapFromUri(uri: Uri, context: Context): Bitmap? {
 @Preview(showBackground = true)
 @Composable
 fun ImagePickerPreview() {
+    val fakeBitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888)
     TensorflowLiteTestTheme {
         Surface(
             modifier = Modifier.fillMaxWidth(),
             color = MaterialTheme.colorScheme.background
         ) {
-            ImagePicker()
+            ImagePickerPreviewContent(fakeBitmap)
         }
     }
 }
+
+@Composable
+fun ImagePickerPreviewContent(fakeBitmap: Bitmap) {
+    Column {
+        ImageDisplay(fakeBitmap)
+        Spacer(modifier = Modifier.padding(20.dp))
+        PredictionResults(
+            bitmap = fakeBitmap,
+            riceLeafResult = "Hijau kekuningan",
+            riceSpotColorResult = "Abu kekuningan",
+            riceSpotModelResult = "Belah ketupat",
+            diseaseUiState = DiseaseUiState.Success(
+                DiseasePredictionResponse("0") // Example prediction
+            )
+        )
+    }
+}
+
 

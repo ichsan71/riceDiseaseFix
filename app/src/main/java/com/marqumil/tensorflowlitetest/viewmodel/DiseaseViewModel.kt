@@ -23,6 +23,10 @@ class DiseaseViewModel(private val diseaseRepository: DiseaseRepository) : ViewM
     private val _diseaseUiState = MutableStateFlow<DiseaseUiState>(DiseaseUiState.Loading)
     val diseaseUiState: StateFlow<DiseaseUiState> = _diseaseUiState
 
+    fun setDiseaseUiState(newState: DiseaseUiState) {
+        _diseaseUiState.value = newState
+    }
+
     fun getDiseasePrediction(requestBody: DiseaseRequestBody) {
         viewModelScope.launch {
             _diseaseUiState.value = DiseaseUiState.Loading

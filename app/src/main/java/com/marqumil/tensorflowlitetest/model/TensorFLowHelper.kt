@@ -16,7 +16,7 @@ import java.nio.ByteOrder
 object TensorFLowHelper {
 
     private const val imageSize = 300  // Image dimension as specified in the metadata
-    private const val confidenceThreshold = 0.50f // Adjust this threshold based on your requirement
+    private const val confidenceThreshold = 0.80f // Adjust this threshold based on your requirement
 
     private fun preprocessImage(image: Bitmap): ByteBuffer {
         // Ensure the bitmap is mutable and in ARGB_8888 format
